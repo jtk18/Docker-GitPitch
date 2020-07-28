@@ -1,6 +1,6 @@
 # Build container for GitPitch
 FROM bigtruedata/sbt:0.13.15-alpine-2.11.11 as SBTBuild
-RUN apk add --update --no-cache git unzip
+RUN apk add --update --no-cache git unzip curl gnupg
 RUN git clone https://github.com/gitpitch/gitpitch.git /gitpitch-git
 RUN cd /gitpitch-git && \
     sbt dist && \
@@ -8,7 +8,7 @@ RUN cd /gitpitch-git && \
     mv /tmp/server-* /gitpitch
 
 # Runtime container
-FROM openjdk:8u181-jre-slim-stretch
+FROM openjdk:8u181-jre
 
 ENV GITPITCH_VERSION=2.0
 
@@ -30,7 +30,8 @@ ADD https://github.com/hairyhenderson/gomplate/releases/download/$GOMPLATE_VERSI
 
 COPY --from=SBTBuild /gitpitch /gitpitch
 
-RUN curl -sL https://deb.nodesource.com/setup_8.x | bash - && \
+RUN apt-get install curl && \
+    curl -sL https://deb.nodesource.com/setup_10.x | bash - && \
     curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add - && \
     curl -sS https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - && \
     echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list && \
@@ -38,8 +39,9 @@ RUN curl -sL https://deb.nodesource.com/setup_8.x | bash - && \
     apt-get update && \
     apt-get install -y  zip \
                         fontconfig \
+                        gnupg \
                         apt-transport-https \
-			gconf2 \
+			            gconf2 \
                         --no-install-recommends && \
     apt-get install -y  nodejs \
                         yarn \
