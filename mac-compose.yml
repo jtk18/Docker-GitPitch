@@ -1,0 +1,12 @@
+version: '3'
+services:
+  gitpitch:
+    image: gitpitch:2.0
+    env_file: .my-env
+    environment:
+      - "GP_HOST=localhost"
+      - "GP_GITLAB_BASE=https://git.cpanel.net/"
+      - "GP_GITLAB_API=https://git.cpanel.net/api/v4/"
+      - "GP_GITLAB_AS_DEFAULT=true"
+    ports:
+      - 9000:9000
